@@ -7,6 +7,7 @@ const Stripe = require("stripe");
 const cloudinary = require("cloudinary").v2
 const multer = require("multer");
 const upload = multer({dest: "upload/"})
+const bcrypt = require("bcrypt");
 
 
 
@@ -62,13 +63,21 @@ app.get("/", (req, res) => {
 // signup
 
 async function signup(req, res) {
-  const { email } = req.body;
+  const { email, password } = req.body;
 
   const result = await userModel.findOne({ email: email });
   if (result) {
     res.send({ message: "email id is already registered", alert: false });
   } else {
-    const data = userModel(req.body);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const data = userModel({
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      email: req.body.email,
+      password: hashedPassword,
+      confirmpassword: req.body.confirmpassword,
+    });
     await data.save();
     res.send({ message: "Successfully Signup", alert: true });
   }
@@ -79,34 +88,39 @@ app.post("/signup", signup);
 // Login
 
 app.post("/login", async (req, res) => {
-  // console.log(req.body);
-  const { email } = req.body;
+  const { email, password } = req.body;
 
-  // Use the `findOne()` method to find the user with the specified email address.
-  const result = await userModel.findOne({ email: email });
+  const user = await userModel.findOne({ email: email });
 
-  // If the user is found, send a success message.
-  if (result) {
-    const dataSend = {
-      _id: result._id,
-      firstname: result.firstname,
-      lastname: result.lastname,
-      email: result.email,
-    };
-    // console.log(dataSend);
-    res.send({
-      message: "Login is successfully",
-      alert: true,
-      data: dataSend,
-    });
+  if (user) {
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (isPasswordMatch) {
+      const dataSend = {
+        _id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+      };
+
+      res.send({
+        message: "Login is successful",
+        alert: true,
+        data: dataSend,
+      });
+    } else {
+      res.send({
+        message: "Incorrect password",
+        alert: false,
+      });
+    }
   } else {
-    // If the user is not found, send a failure message.
     res.send({
       message: "Email is not available, please sign up",
       alert: false,
     });
   }
 });
+
 
 // Product Section
 
