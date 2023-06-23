@@ -183,6 +183,12 @@ app.post("/uploadProduct", upload.single("image"), async (req, res,next) => {
 
 
 
+// get user info 
+
+
+
+
+
 
 
 // get product data
@@ -245,6 +251,25 @@ app.post("/checkout-payment", async (req, res) => {
   //   success: true,
   // });
 });
+
+
+// get user info 
+
+// Add the following code after the "/checkout-payment" endpoint
+
+// Retrieve all users
+app.get("/users", async (req, res) => {
+  try {
+    const users = await userModel.find({});
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
 
 // Api running
 
