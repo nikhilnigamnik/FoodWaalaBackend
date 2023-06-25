@@ -234,7 +234,7 @@ app.post("/checkout-payment", async (req, res) => {
   //   message: "Payment Gateway",
   //   success: true,
   // });
-  
+
 });
 
 
@@ -243,6 +243,8 @@ app.post("/checkout-payment", async (req, res) => {
 // Add the following code after the "/checkout-payment" endpoint
 
 // Retrieve all users
+
+
 app.get("/users", async (req, res) => {
   try {
     const users = await userModel.find({});
