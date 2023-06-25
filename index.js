@@ -136,15 +136,7 @@ const schemaProduct = mongoose.Schema({
 
 const productModel = mongoose.model("product", schemaProduct);
 
-// save product in DB
 
-// app.post("/uploadProduct", async (req, res) => {
-//   const data = await productModel(req.body);
-//   const dataSave = await data.save();
-//   res.send({
-//     message: "upload Seccessfully",
-//   });
-// });
 
 
 app.post("/uploadProduct", upload.single("image"), async (req, res,next) => {
@@ -191,15 +183,7 @@ app.post("/uploadProduct", upload.single("image"), async (req, res,next) => {
 
 
 
-// get product data
 
-// app.get("/product", async (req, res) => {
-//   const data = await productModel.find({});
-//   // console.log(data)
-//   res.status(200).json({
-//     ...data,message:"data fetched"
-//   });
-// });
 
  app.get("/product", async (req, res) => {
    const data = await productModel.find({});
@@ -250,6 +234,7 @@ app.post("/checkout-payment", async (req, res) => {
   //   message: "Payment Gateway",
   //   success: true,
   // });
+  
 });
 
 
