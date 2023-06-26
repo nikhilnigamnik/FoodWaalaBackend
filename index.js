@@ -167,23 +167,35 @@ app.post("/uploadProduct", upload.single("image"), async (req, res, next) => {
   }
 });
 
-app.get("/product", async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
 
-  try {
-    const data = await productModel
-      .find({})
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
 
-    res.send(JSON.stringify(data));
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to retrieve products",
-      error: error.message,
-    });
-  }
-});
+// infinite Scroll
+
+// app.get("/product", async (req, res) => {
+//   const { page = 1, limit = 10 } = req.query;
+
+//   try {
+//     const data = await productModel
+//       .find({})
+//       .skip((page - 1) * limit)
+//       .limit(Number(limit));
+
+//     res.send(JSON.stringify(data));
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Failed to retrieve products",
+//       error: error.message,
+//     });
+//   }
+// });
+
+
+
+
+  app.get("/product", async (req, res) => { 
+    const data = await productModel.find({}); 
+   res.send(JSON.stringify(data)); 
+  }); 
 
 // Stripe Payment
 
