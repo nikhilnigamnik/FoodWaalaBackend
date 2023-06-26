@@ -20,6 +20,8 @@ app.use(express.json({ limit: "1000mb" }));
 
 const PORT = process.env.PORT || 8000;
 
+// mongodb connection
+// console.log(process.env.MONGODB_URL);
 mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.MONGODB_URL, {
@@ -27,11 +29,13 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to database!");
+    console.log("Connected to database !!");
   })
   .catch((err) => {
-    console.log("Connection failed: " + err.message);
+    console.log("Connection failed !!" + err.message);
   });
+
+//   schemaaa
 
 const userSchema = mongoose.Schema({
   firstname: String,
@@ -44,18 +48,24 @@ const userSchema = mongoose.Schema({
   confirmpassword: String,
 });
 
+// model
+
 const userModel = mongoose.model("user", userSchema);
+
+// api
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
+
+// signup
 
 async function signup(req, res) {
   const { email, password } = req.body;
 
   const result = await userModel.findOne({ email: email });
   if (result) {
-    res.send({ message: "Email ID is already registered", alert: false });
+    res.send({ message: "email id is already registered", alert: false });
   } else {
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -67,11 +77,13 @@ async function signup(req, res) {
       confirmpassword: req.body.confirmpassword,
     });
     await data.save();
-    res.send({ message: "Successfully signed up", alert: true });
+    res.send({ message: "Successfully Signup", alert: true });
   }
 }
 
 app.post("/signup", signup);
+
+// Login
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -107,6 +119,8 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Product Section
+
 const schemaProduct = mongoose.Schema({
   name: String,
   category: String,
@@ -123,13 +137,12 @@ app.post("/uploadProduct", upload.single("image"), async (req, res, next) => {
   try {
     const { name, category, discount, rating, price, description } = req.body;
 
-    const cloudinaryResponse = await cloudinary.uploader.upload(
-      req.file.path,
-      {
-        folder: "product-images",
-      }
-    );
+    // Upload the image to Cloudinary
+    const cloudinaryResponse = await cloudinary.uploader.upload(req.file.path, {
+      folder: "product-images", // Optional folder in Cloudinary
+    });
 
+    // Create a new product instance with the image URL
     const data = await productModel({
       name,
       category,
@@ -137,39 +150,51 @@ app.post("/uploadProduct", upload.single("image"), async (req, res, next) => {
       description,
       discount,
       rating,
-      image: cloudinaryResponse.secure_url,
+      image: cloudinaryResponse.secure_url, // Store the Cloudinary image URL
     });
 
+    // Save the product in the database
     const dataSave = await data.save();
 
     res.send({
-      message: "Upload successful",
+      message: "Upload Successful",
     });
   } catch (error) {
     res.status(500).json({
-      message: "Upload failed",
+      message: "Upload Failed",
       error: error.message,
     });
   }
 });
 
-app.get("/product", async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+// get user info
 
-  try {
-    const data = await productModel
-      .find({})
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+// with pagination
 
-    res.send(JSON.stringify(data));
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to retrieve products",
-      error: error.message,
-    });
-  }
-});
+// app.get("/product", async (req, res) => {
+//   const { page = 1, limit = 8 } = req.query;
+//   try {
+//     const data = await productModel
+//       .find({})
+//       .skip((page - 1) * limit)
+//       .limit(Number(limit));
+//     res.send(JSON.stringify(data));
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Failed to retrieve products",
+//       error: error.message,
+//     });
+//   }
+// });
+
+// without pagination
+
+ app.get("/product", async (req, res) => {
+   const data = await productModel.find({});
+  res.send(JSON.stringify(data));
+ });
+
+// Stripe Payment
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -187,6 +212,7 @@ app.post("/checkout-payment", async (req, res) => {
             currency: "inr",
             product_data: {
               name: item.name,
+              // images : [item.image]
             },
             unit_amount: item.price * 100,
           },
@@ -197,6 +223,7 @@ app.post("/checkout-payment", async (req, res) => {
           quantity: item.qty,
         };
       }),
+
       success_url: `${process.env.FRONTEND_URL}/success`,
       cancel_url: `${process.env.FRONTEND_URL}/cancel`,
     };
@@ -206,7 +233,18 @@ app.post("/checkout-payment", async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json(error.message);
   }
+
+  // res.send({
+  //   message: "Payment Gateway",
+  //   success: true,
+  // });
 });
+
+// get user info
+
+// Add the following code after the "/checkout-payment" endpoint
+
+// Retrieve all users
 
 app.get("/users", async (req, res) => {
   try {
@@ -217,4 +255,6 @@ app.get("/users", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log("Server is running on port: " + PORT));
+// Api running
+
+app.listen(PORT, () => console.log("Server is running port : " + PORT));
