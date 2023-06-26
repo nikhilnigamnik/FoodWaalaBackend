@@ -4,18 +4,16 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
 const app = express();
 const Stripe = require("stripe");
-const cloudinary = require("cloudinary").v2
+const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
-const upload = multer({dest: "upload/"})
+const upload = multer({ dest: "upload/" });
 const bcrypt = require("bcrypt");
-
-
 
 cloudinary.config({
   cloud_name: "dtmp7op6k",
   api_key: "989387644814239",
-  api_secret: "IYVOamSGXPxz0C0iulGleE0axr4"
-})
+  api_secret: "IYVOamSGXPxz0C0iulGleE0axr4",
+});
 
 app.use(cors());
 app.use(express.json({ limit: "1000mb" }));
@@ -121,7 +119,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
 // Product Section
 
 const schemaProduct = mongoose.Schema({
@@ -136,12 +133,9 @@ const schemaProduct = mongoose.Schema({
 
 const productModel = mongoose.model("product", schemaProduct);
 
-
-
-
-app.post("/uploadProduct", upload.single("image"), async (req, res,next) => {
+app.post("/uploadProduct", upload.single("image"), async (req, res, next) => {
   try {
-    const { name, category,discount,rating, price, description } = req.body;
+    const { name, category, discount, rating, price, description } = req.body;
 
     // Upload the image to Cloudinary
     const cloudinaryResponse = await cloudinary.uploader.upload(req.file.path, {
@@ -173,22 +167,32 @@ app.post("/uploadProduct", upload.single("image"), async (req, res,next) => {
   }
 });
 
+// get user info
 
+// with pagination
 
-// get user info 
+app.get("/product", async (req, res) => {
+  const { page = 1, limit = 8 } = req.query;
+  try {
+    const data = await productModel
+      .find({})
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+    res.send(JSON.stringify(data));
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to retrieve products",
+      error: error.message,
+    });
+  }
+});
 
+// without pagination
 
-
-
-
-
-
-
-
- app.get("/product", async (req, res) => {
-   const data = await productModel.find({});
-  res.send(JSON.stringify(data));
- });
+//  app.get("/product", async (req, res) => {
+//    const data = await productModel.find({});
+//   res.send(JSON.stringify(data));
+//  });
 
 // Stripe Payment
 
@@ -234,16 +238,13 @@ app.post("/checkout-payment", async (req, res) => {
   //   message: "Payment Gateway",
   //   success: true,
   // });
-
 });
 
-
-// get user info 
+// get user info
 
 // Add the following code after the "/checkout-payment" endpoint
 
 // Retrieve all users
-
 
 app.get("/users", async (req, res) => {
   try {
@@ -253,10 +254,6 @@ app.get("/users", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
-
-
 
 // Api running
 
