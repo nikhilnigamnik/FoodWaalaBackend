@@ -154,7 +154,7 @@ app.post("/uploadProduct", upload.single("image"), async (req, res, next) => {
 });
 
 app.get("/product", async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 8 } = req.query;
 
   try {
     const data = await productModel
