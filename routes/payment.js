@@ -1,8 +1,10 @@
-// Stripe Payment
+const express = require("express");
+const Stripe = require("stripe");
+const router = express.Router();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-app.post("/checkout-payment", async (req, res) => {
+router.post("/checkout-payment", async (req, res) => {
   try {
     const params = {
       submit_type: "pay",
@@ -16,7 +18,6 @@ app.post("/checkout-payment", async (req, res) => {
             currency: "inr",
             product_data: {
               name: item.name,
-              // images : [item.image]
             },
             unit_amount: item.price * 100,
           },
@@ -27,7 +28,6 @@ app.post("/checkout-payment", async (req, res) => {
           quantity: item.qty,
         };
       }),
-
       success_url: `${process.env.FRONTEND_URL}/success`,
       cancel_url: `${process.env.FRONTEND_URL}/cancel`,
     };
@@ -37,10 +37,6 @@ app.post("/checkout-payment", async (req, res) => {
   } catch (error) {
     res.status(error.statusCode || 500).json(error.message);
   }
-
-  // res.send({
-  //   message: "Payment Gateway",
-  //   success: true,
-  // });
-
 });
+
+module.exports = router;
