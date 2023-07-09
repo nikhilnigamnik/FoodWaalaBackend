@@ -208,6 +208,46 @@ app.post("/uploadProduct", upload.single("image"), async (req, res, next) => {
     }); 
   } 
 }); 
+
+
+
+
+// api for change password
+
+app.put('/user/:id/password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    // Find the user by ID
+    const user = await userModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the current password matches the stored password
+    const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({ message: 'Incorrect current password' });
+    }
+
+    // Validate the new password (e.g., minimum length, complexity requirements)
+    // Implement your own password validation logic here
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the database
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
  
  
  
